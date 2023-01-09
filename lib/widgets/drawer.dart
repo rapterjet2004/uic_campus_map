@@ -29,8 +29,8 @@ class _DrawerState extends State<SearchPage> {
       snapSizes: [0.4],
       controller: widget.dscontroller,
       maxChildSize: 0.6,
-      minChildSize: 0.07,
-      initialChildSize: 0.07,
+      minChildSize: 0.13,
+      initialChildSize: 0.13,
       builder: (BuildContext context, ScrollController scrollController) {
         return GestureDetector(
           onTap: () => setState(() {
@@ -83,7 +83,7 @@ class _DrawerState extends State<SearchPage> {
                                 child: BuildingInfoAndServices(model: widget.model)),
                             // ignore: prefer_const_constructors
                             Positioned(
-                                top: 40, left: 35, right: 35, child: SearchBar(controller: widget.dbcontroller, hideResults: hideResults,)),
+                                top: 40, left: 35, right: 35, child: SearchBar(controller: widget.dbcontroller, hideResults: hideResults, drawerController: widget.dscontroller,)),
                           ],
                         ),
                       ],

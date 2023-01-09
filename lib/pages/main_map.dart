@@ -137,7 +137,7 @@ class _MainMapPageState extends State<MainMapPage> {
                   setState(() {
                     _infoModel = ValueNotifier<InfoModel>(tempResults[0]);
                     if(tempResults[0] != null) {
-                      //dscontroller.animateTo(0.6, duration: const Duration(seconds: 1), curve: Curves.easeIn);
+                      dscontroller.animateTo(0.6, duration: const Duration(seconds: 1), curve: Curves.decelerate);
                     }
                     });
                 },

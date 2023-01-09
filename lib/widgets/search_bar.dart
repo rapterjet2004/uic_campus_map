@@ -10,8 +10,9 @@ import 'package:uic_map/services/widget_notifications.dart';
 
 class SearchBar extends StatefulWidget {
   final DatabaseController controller;
+  final DraggableScrollableController drawerController;
   bool hideResults;
-  SearchBar({super.key, required this.controller, required this.hideResults});
+  SearchBar({super.key, required this.controller, required this.hideResults, required this.drawerController});
 
   @override
   State<SearchBar> createState() => _SearchState();
@@ -95,10 +96,14 @@ class _SearchState extends State<SearchBar> {
                 onChanged: (query) async {
                   List<BuildingModel> tempResults =
                       await widget.controller.searchBuildingInfo(query.toUpperCase());
-                  setState(() => searchResults = tempResults);
+                  setState(() { 
+                    searchResults = tempResults;
+                    widget.hideResults = false;
+                    });
                 },
                 onTap: () => setState(() {
                   widget.hideResults = false;
+                  widget.drawerController.jumpTo(0.6);
                 }),
               ),
             ),
