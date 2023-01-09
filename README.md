@@ -1,6 +1,6 @@
-# uic_map
+# UIC_Campus_Map
 
-A new Flutter project.
+My first actually decent project. Hopefully people will actually use it.
 
 ## Getting Started
 
