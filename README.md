@@ -1,16 +1,5 @@
 # UIC_Campus_Map
 
-My first actually decent project. Hopefully people will actually use it.
+My first actually decent project. Made with Flutter and SQLite. 
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![screen_1](https://user-images.githubusercontent.com/69230048/212221959-7ed01155-d452-49f9-bbcf-38adf443b4da.png)
