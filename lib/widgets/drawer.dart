@@ -2,16 +2,20 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:uic_map/database/database_controller/database_controller.dart';
 import 'package:uic_map/database/models/additional_info_model.dart';
-import 'package:uic_map/database/models/building_info_model.dart';
 import 'package:uic_map/widgets/building_info_services.dart';
 import 'package:uic_map/widgets/search_bar.dart';
+import 'package:uic_map/widgets/filter.dart';
 import 'dart:developer' as developer;
 
 class SearchPage extends StatefulWidget {
   final DatabaseController dbcontroller;
   final DraggableScrollableController dscontroller;
   final ValueListenable<InfoModel> model;
-  const SearchPage({super.key, required this.model, required this.dbcontroller, required this.dscontroller});
+  const SearchPage(
+      {super.key,
+      required this.model,
+      required this.dbcontroller,
+      required this.dscontroller});
 
   @override
   State<SearchPage> createState() => _DrawerState();
@@ -63,7 +67,7 @@ class _DrawerState extends State<SearchPage> {
                         Stack(
                           // Stack is here to act as a bounding box for all the drawer widgets, removing it results in weird aspect ratio
                           children: [
-                            const Positioned(
+                            const Positioned( // Search
                               top: 5,
                               left: 0,
                               right: 0,
@@ -76,22 +80,34 @@ class _DrawerState extends State<SearchPage> {
                                     color: Color.fromARGB(255, 4, 20, 101)),
                               ),
                             ),
-                            Positioned(
+                            Positioned( // BuildingInfo
                                 top: 80,
                                 left: 15,
                                 right: 15,
-                                child: BuildingInfoAndServices(model: widget.model)),
+                                child: Column(
+                                  children: [
+                                    Filter(dbcontroller: widget.dbcontroller,),
+                                    BuildingInfoAndServices(
+                                        model: widget.model),
+                                  ],
+                                )),
                             // ignore: prefer_const_constructors
-                            Positioned(
-                                top: 40, left: 35, right: 35, child: SearchBar(controller: widget.dbcontroller, hideResults: hideResults, drawerController: widget.dscontroller,)),
+                            Positioned( // Search Bar
+                                top: 40,
+                                left: 35,
+                                right: 35,
+                                child: SearchBar(
+                                  controller: widget.dbcontroller,
+                                  hideResults: hideResults,
+                                  drawerController: widget.dscontroller,
+                                )),
                           ],
                         ),
                       ],
                     ),
                   )
                 ],
-              )
-              ),
+              )),
         );
       },
     ));

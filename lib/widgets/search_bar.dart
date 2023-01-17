@@ -12,7 +12,11 @@ class SearchBar extends StatefulWidget {
   final DatabaseController controller;
   final DraggableScrollableController drawerController;
   bool hideResults;
-  SearchBar({super.key, required this.controller, required this.hideResults, required this.drawerController});
+  SearchBar(
+      {super.key,
+      required this.controller,
+      required this.hideResults,
+      required this.drawerController});
 
   @override
   State<SearchBar> createState() => _SearchState();
@@ -23,12 +27,7 @@ class _SearchState extends State<SearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    // developer.log('widget rebuilt', name: 'my.app.search_bar');
-    int size = (searchResults.length <= 3)? searchResults.length : 3;
-    // developer.log('Search Result size: $size', name: 'my.app.search_bar');
-    // if (size > 0) {
-    //   developer.log(searchResults[0].toString(), name: 'my.app.search_bar');
-    // }
+    int size = (searchResults.length <= 3) ? searchResults.length : 3;
 
     return Container(
       alignment: Alignment.center,
@@ -62,7 +61,8 @@ class _SearchState extends State<SearchBar> {
                       subtitle: Text(searchResults[index].CAMPUS),
                       leading: Text(searchResults[index].CODE),
                       onTap: () {
-                        SearchResultTapped(searchResults[index]).dispatch(context);
+                        SearchResultTapped(searchResults[index])
+                            .dispatch(context);
                         searchResults = <BuildingModel>[];
                       },
                     );
@@ -71,7 +71,7 @@ class _SearchState extends State<SearchBar> {
               ),
             ),
           ),
-            // SearchBox
+          // SearchBox
           Container(
             width: 350,
             decoration: BoxDecoration(
@@ -81,25 +81,25 @@ class _SearchState extends State<SearchBar> {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextField(
+                cursorColor: Theme.of(context).primaryColor,
                 decoration: const InputDecoration.collapsed(
                   hintText: 'Search',
                 ),
                 onSubmitted: (query) {
-                  if(searchResults.isNotEmpty && query.isNotEmpty) {
+                  if (searchResults.isNotEmpty && query.isNotEmpty) {
                     SearchResultTapped(searchResults[0]).dispatch(context);
                     searchResults = <BuildingModel>[];
-                  }
-                  else{
+                  } else {
                     searchResults = <BuildingModel>[];
                   }
                 },
                 onChanged: (query) async {
-                  List<BuildingModel> tempResults =
-                      await widget.controller.searchBuildingInfo(query.toUpperCase());
-                  setState(() { 
+                  List<BuildingModel> tempResults = await widget.controller
+                      .searchBuildingInfo(query.toUpperCase());
+                  setState(() {
                     searchResults = tempResults;
                     widget.hideResults = false;
-                    });
+                  });
                 },
                 onTap: () => setState(() {
                   widget.hideResults = false;

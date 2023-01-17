@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 // ignore: depend_on_referenced_packages
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
@@ -25,18 +26,20 @@ class _MainMapPageState extends State<MainMapPage> {
   final LatLngBounds bounds =
       LatLngBounds(LatLng(41.86165, -87.6851), LatLng(41.8775, -87.6448));
   late final MapController _mapController;
-  // final Location _locationService = Location();
-  // LocationData? _currentLocation;
   bool _permission = false;
-  // ignore: prefer_final_fields
-  // bool _liveUpdate = true;
-  // bool _isOutBounds = false;
-  // bool _isHome = true;
-
-  List<BuildingModel> _filteredModels = [];
+  DatabaseController dbcontroller = DatabaseController('UIC__building_info.db');
+  // Default searched model when not searched
+  BuildingModel searchedModel = const BuildingModel(
+      ADDRESS: "ADDRESS",
+      LATITUDE: 0,
+      LONGITUDE: 0,
+      CODE: "CODE",
+      NAME: "NAME",
+      TYPE: "Libraries",
+      CAMPUS: "CAMPUS");
+  List<List<BuildingModel>> filterModels = List.filled(5, <BuildingModel>[]);
   var _infoModel = ValueNotifier<InfoModel>(InfoModel());
   DraggableScrollableController dscontroller = DraggableScrollableController();
-
 
   @override
   void initState() {
@@ -48,35 +51,11 @@ class _MainMapPageState extends State<MainMapPage> {
     initLocationService();
   }
 
-
   void initLocationService() async {
     _permission = await Permission.locationWhenInUse.request().isGranted;
-    // LocationData? location;
 
     try {
-      if (_permission) {
-        // await _locationService.changeSettings(
-        //   accuracy: LocationAccuracy.high,
-        //   interval: 5000,
-        // );
-        // location = await _locationService.getLocation();
-        // _currentLocation = location;
-        // _locationService.onLocationChanged.listen((LocationData result) async {
-        //   if (mounted) {
-        //     setState(() {
-        //       _currentLocation = result;
-            
-        //       if (_liveUpdate) { // Not actually needed but for some reasons a bunch of errors pop up if I remove this
-        //         _mapController.move(
-        //             LatLng(_currentLocation!.latitude!,
-        //                 _currentLocation!.longitude!),
-        //             _mapController.zoom);
-        //       }
-        //       _liveUpdate = false;
-        //     });
-        //   }
-        // });
-      } else {
+      if (!_permission) {
         // The user opted to never again see the permission request dialog for this
         // app. The only way to change the permission's status now is to let the
         // user manually enable it in the system settings.
@@ -84,23 +63,12 @@ class _MainMapPageState extends State<MainMapPage> {
       }
     } on PlatformException catch (e) {
       debugPrint(e.toString());
-      // location = null;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // developer.log('widget rebuilt', name: 'my.app.main_map');
-    
-    // LatLng currentLatLng;
-    DatabaseController dbcontroller = DatabaseController('UIC__building_info.db');
-
-    // if (_currentLocation != null) {
-    //   currentLatLng =
-    //       LatLng(_currentLocation!.latitude!, _currentLocation!.longitude!);
-    // } else {
-    //   currentLatLng = LatLng(0, 0); //default location is out of map bounds until location is retrieved
-    // }
+    List<BuildingModel> renderedModels = [];
 
     final overlayImages = <BaseOverlayImage>[
       RotatedOverlayImage(
@@ -113,40 +81,77 @@ class _MainMapPageState extends State<MainMapPage> {
           imageProvider: const AssetImage("assets/images/mappnguntouched.png"))
     ];
 
-    List<Marker> markers = [
-      // Marker(
-      //   width: 20,
-      //   height: 20,
-      //   point: currentLatLng,
-      //   builder: (ctx) => DefaultLocationMarkerSimple(
-      //     child: SvgPicture.asset(
-      //       'assets/images/iconly_svg_optimized-optimized.svg',
-      //     ),
-      //   ),
-      // ),
+    // I should make sure to create a way to remove duplicates
+    // By default contains one widget at all times, which is the search widget
+    List<Marker> searchMarker = [
+      Marker(
+          point: LatLng(searchedModel.LATITUDE, searchedModel.LONGITUDE),
+          builder: (ctx) => GestureDetector(
+              onDoubleTap: () => setState(() {
+                    searchedModel = const BuildingModel(
+                        ADDRESS: "ADDRESS",
+                        LATITUDE: 0,
+                        LONGITUDE: 0,
+                        CODE: "CODE",
+                        NAME: "NAME",
+                        TYPE: "Libraries",
+                        CAMPUS: "CAMPUS");
+                  }),
+              onTap: () async {
+                List<InfoModel> tempResults =
+                    await dbcontroller.searchAdditionalInfo(searchedModel.CODE);
+                setState(() {
+                  _infoModel = ValueNotifier<InfoModel>(tempResults[0]);
+                });
+                if (tempResults[0] != null) {
+                  // animation seems more trouble than it's worth, but I'll
+                  // keep this around for now
+                  // dscontroller.animateTo(0.6,
+                  //     duration: const Duration(seconds: 1),
+                  //     curve: Curves.decelerate);
+                }
+              },
+              child: SvgPicture.asset(
+                'assets/icons/${searchedModel.TYPE}.svg',
+              )))
     ];
 
-    _filteredModels.forEach(((m) => markers.add(Marker(
-        height: 40,
-        width: 40,
+    List<Marker> markers = [];
+
+    for (int i = 0; i < filterModels.length; i++) {
+      filterModels[i].forEach((m) {
+        renderedModels.add(m);
+      });
+    }
+
+    developer.log("Rendered Models: ${renderedModels.length}");
+    // Determines the builder widget for each marker on screen
+
+    
+    renderedModels.forEach(((m) => markers.add(Marker(
+        height: 20,
+        width: 20,
         point: LatLng(m.LATITUDE, m.LONGITUDE),
         builder: (ctx) => GestureDetector(
-                onDoubleTap: () async {
-                  
-                  List<InfoModel> tempResults = await dbcontroller.searchAdditionalInfo(m.CODE);
-                  setState(() {
-                    _infoModel = ValueNotifier<InfoModel>(tempResults[0]);
-                    if(tempResults[0] != null) {
-                      dscontroller.animateTo(0.6, duration: const Duration(seconds: 1), curve: Curves.decelerate);
-                    }
-                    });
-                },
-                child: SvgPicture.asset(
+            onTap: () async {
+              List<InfoModel> tempResults =
+                  await dbcontroller.searchAdditionalInfo(m.CODE);
+              setState(() {
+                _infoModel = ValueNotifier<InfoModel>(tempResults[0]);
+                if (tempResults[0] != null) {
+                  // dscontroller.animateTo(0.6,
+                  //     duration: const Duration(seconds: 1),
+                  //     curve: Curves.decelerate);
+                }
+              });
+            },
+            child: SvgPicture.asset(
               'assets/icons/${m.TYPE}.svg',
             ))))));
+    
 
-      return Scaffold(
-      body: Stack(
+    return Scaffold(
+        body: Stack(
       children: <Widget>[
         FlutterMap(
           mapController: _mapController,
@@ -162,55 +167,70 @@ class _MainMapPageState extends State<MainMapPage> {
             maxBounds: bounds,
             slideOnBoundaries: true,
           ),
-          
-          children: [ // for testing map accuracy
-            // TileLayer(
-            //   tileProvider: AssetTileProvider(),
-            //   maxZoom: 18,
-            //   urlTemplate: 'assets/map/uic/{z}/{x}/{y}.png',
-            // ),
+          children: [
             OverlayImageLayer(overlayImages: overlayImages),
             CurrentLocationLayer(
               style: LocationMarkerStyle(
-              marker: DefaultLocationMarker(
-                color: Theme.of(context).primaryColor,
+                marker: DefaultLocationMarker(
+                  color: Theme.of(context).primaryColor,
+                ),
+                markerSize: const Size(20, 20),
+                accuracyCircleColor:
+                    Theme.of(context).primaryColor.withOpacity(0.1),
+                headingSectorColor:
+                    Theme.of(context).primaryColor.withOpacity(0.8),
+                headingSectorRadius: 40,
               ),
-              markerSize: const Size(20, 20),
-              accuracyCircleColor: Theme.of(context).primaryColor.withOpacity(0.1),
-              headingSectorColor: Theme.of(context).primaryColor.withOpacity(0.8),
-              headingSectorRadius: 40,
-            ),),
-            MarkerLayer(markers: markers),
+            ),
+            MarkerClusterLayerWidget(
+              options: MarkerClusterLayerOptions(
+                  maxClusterRadius: 40,
+                  size: const Size(20, 20),
+                  markers: markers,
+                  builder: ((context, markers) {
+                    return FloatingActionButton(
+                        onPressed: null,
+                        child: Text(
+                          markers.length.toString(),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      );
+                  })),
+            ),
+            MarkerLayer(markers: searchMarker),
           ],
         ),
-        NotificationListener<SearchResultTapped>(
-            onNotification: (n) {
-              setState(() {
-                if(_filteredModels.isEmpty) {
-                  _filteredModels.add(n.model);
-                }
-                else {
-                  _filteredModels.remove(_filteredModels.last);
-                  _filteredModels.add(n.model);
-                }
-        
-                _mapController.move(
-                    LatLng(n.model.LATITUDE,
-                        n.model.LONGITUDE),
-                    _mapController.zoom);
-        
-                developer.log('Search Result Recieved',
-                    name: 'my.app.main_map');
-              });
-              return true;
-            },
-            child: RepaintBoundary(child: SearchPage(model: _infoModel, dbcontroller: dbcontroller, dscontroller: dscontroller,))),
-        // Visibility(
-        //   visible: _currentLocation == null,
-        //   child: OutsideBoundsPage())
+        NotificationListener<FilterTapped>(
+          onNotification: (n) {
+            setState(() {
+              filterModels[n.filterNum] = n.models;
+              developer.log(
+                  "filter tap detected on index ${n.filterNum} with ${n.models.length} models");
+            });
+
+            return true;
+          },
+          child: NotificationListener<SearchResultTapped>(
+              onNotification: (n) {
+                setState(() {
+                  searchedModel = n.model;
+
+                  _mapController.move(
+                      LatLng(n.model.LATITUDE, n.model.LONGITUDE),
+                      _mapController.zoom);
+
+                  developer.log('Search Result Recieved',
+                      name: 'my.app.main_map');
+                });
+                return true;
+              },
+              child: SearchPage(
+                model: _infoModel,
+                dbcontroller: dbcontroller,
+                dscontroller: dscontroller,
+              )),
+        ),
       ],
-    
-    )
-    );
+    ));
   }
 }

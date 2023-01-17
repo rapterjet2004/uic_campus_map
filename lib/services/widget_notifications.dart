@@ -5,3 +5,9 @@ class SearchResultTapped extends Notification {
   final BuildingModel model;
   SearchResultTapped(this.model);
 }
+
+class FilterTapped extends Notification {
+  final List<BuildingModel> models;
+  final int filterNum;
+  FilterTapped(this.models, this.filterNum);
+}

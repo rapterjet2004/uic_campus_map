@@ -63,8 +63,11 @@ class DatabaseController {
   Future<List<InfoModel>> searchAdditionalInfo(String query) async {
     final db = await database;
 
-    final List<Map<String, dynamic>> searchResults = await db.query(TABLES[1], // wrap this with a try catch
-        columns: ['*'], where: 'CODE = ?', whereArgs: [query]);
+    final List<Map<String, dynamic>> searchResults =
+        await db.query(TABLES[1], // wrap this with a try catch
+            columns: ['*'],
+            where: 'CODE = ?',
+            whereArgs: [query]);
 
     return List.generate(searchResults.length, (i) {
       return InfoModel(
@@ -73,6 +76,23 @@ class DatabaseController {
           NUMBER: searchResults[i]['NUMBER'],
           ADDRESS: searchResults[i]['ADDRESS'],
           INFO: searchResults[i]['INFO']);
+    });
+  }
+
+  Future<List<BuildingModel>> searchFilterInfo(String query) async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> searchResults = await db.rawQuery('SELECT * FROM Building_Info INNER JOIN Filter_Info ON NAME = "$query";');
+
+    return List.generate(searchResults.length, (i) {
+      return BuildingModel(
+          ADDRESS: searchResults[i]['ADDRESS'],
+          LATITUDE: searchResults[i]['LATITUDE'],
+          LONGITUDE: searchResults[i]['LONGITUDE'],
+          CODE: searchResults[i]['CODE'],
+          NAME: searchResults[i]['NAME'],
+          TYPE: searchResults[i]['TYPE'],
+          CAMPUS: searchResults[i]['CAMPUS']);
     });
   }
 }

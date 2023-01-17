@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:uic_map/database/models/additional_info_model.dart';
 
 
@@ -26,7 +25,7 @@ class BuildingInfoAndServices extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.only(right: 20, left: 20, top: 20),
             child: Container(
-              height: 290,
+              height: 240,
               child: Scrollbar(
                 thumbVisibility: false,
                 thickness: 2,

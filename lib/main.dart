@@ -20,6 +20,7 @@ void initFireBase() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+  final Color primaryColor = const Color.fromARGB(255, 212, 31, 52);
 
   // This widget is the root of your application.
   @override
@@ -28,7 +29,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-        primaryColor: const Color.fromARGB(255, 212, 31, 52),
+        primaryColor: primaryColor,
+        splashColor: primaryColor,
+        highlightColor: primaryColor,
+        colorScheme: ColorScheme.light(secondary: primaryColor)
       ),
       home: MainMapPage(),
     );
